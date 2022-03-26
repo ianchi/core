@@ -1,0 +1,307 @@
+#
+#  COMMON PROTOCOL DEFINITION
+#
+# Definition of all possible protocols for all platform.
+# If a platform supports a protocol it must adhere to this definition,
+# otherwise it is a new protocol and must be added here.
+# This warrantees a uniform meaning among platforms
+#
+# This is used to:
+#   - validate command strings in ESPHome and Home Assistant
+#   - generate c++ helpers
+#   - generate documentation
+#
+# Supported data types:
+# - uint
+# - uint8_t
+# - uint16_t
+# - uint32_t
+# - uint64_t
+# - int
+# - int32_t
+# - string
+# - float
+# - bool
+# any can be an array appending '[]' at the end
+# This data types are automatically converted and validated
+#
+# Additional schema validations can be expressed as keys in the schema.
+# Each key is a voluptuous validator.
+# Positional arguments are defined as an array in ´args´ key.
+# Keywords arguments as key/values
+#
+# Multiple validators are treated as ´All´ must apply.
+#
+# Supported validators
+# - Range
+# - one_of
+#
+# custom:
+# - proto_pronto (check string of hex well formatted)
+# - alternating_sign (check alternating positive/negative in array)
+# - binary_string (check string is a sequence of 0/1)
+
+coolix:
+  desc: Coolix 24-bit IR code
+  type: IR
+  args:
+    - name: data
+      type: uint32_t
+      desc: Code to send
+
+dish:
+  desc: Dish Network IR code
+  type: IR
+  args:
+    - name: command
+      desc: Command to send
+      type: uint8_t
+      schema:
+        Range:
+          min: 0
+          max: 63
+    - name: address
+      desc: Receiver ID to target
+      type: uint8_t
+      default: 1
+      schema:
+        Range:
+          min: 1
+          max: 16
+
+jvc:
+  desc: JVC IR code
+  type: IR
+  args:
+    - name: data
+      desc: JVC code to send
+      type: uint32_t
+
+lg:
+  desc: LG IR code
+  type: IR
+  args:
+    - name: data
+      desc: LG code to send
+      type: uint32_t
+    - name: nbits
+      desc: Number of bits to send (28 or 32)
+      default: 28
+      type: int
+      schema:
+        Any: [28, 32]
+
+midea:
+  desc: Midea 40-bit IR code. 8-bit checksum added automatically
+  type: IR
+  args:
+    - name: code
+      type: uint8_t[]
+      desc: 40-bit Midea code to send as list of 5 hex/integers
+      schema:
+        Length:
+          min: 5
+          max: 5
+
+nec:
+  desc: NEC IR code (in LSB form)
+  type: IR
+  args:
+    - name: address
+      type: uint16_t
+      desc: Address to send
+    - name: command
+      type: uint16_t
+      desc: NEC command to send
+
+nexa:
+  desc: Nexa RF code
+  type: RF
+  args:
+    - name: device
+      type: uint32_t
+      desc: Nexa device code
+    - name: state
+      type: uint8_t
+      desc: Nexa state code to send (0-OFF, 1-ON, 2-DIMMER LEVEL)
+    - name: group
+      type: uint8_t
+      desc: Nexa group code
+    - name: channel
+      type: uint8_t
+      desc: Nexa channel code
+    - name: level
+      type: uint8_t
+      desc: Nexa level code
+
+panasonic:
+  desc: Panasonic IR code
+  type: IR
+  args:
+    - name: address
+      type: uint16_t
+      desc: Address to send
+      example: '0x1FEF'
+    - name: command
+      type: uint32_t
+      desc: NEC command to send
+      example: '0x1F3E065F'
+
+pioneer:
+  desc: Pioneer IR code
+  type: IR
+  note: |
+    Note that repeat is still optional, however Pioneer devices may require
+    that a given code is received multiple times before they will act on it.
+
+    If unable to find your specific device in the documentation,
+    find a device in the same class; the codes are largely shared among devices within a given class.
+  link:
+    - https://www.pioneerelectronics.com/PUSA/Support/Home-Entertainment-Custom-Install/IR+Codes
+  args:
+    - name: rc_code_1
+      type: uint16_t
+      desc: Remote control code
+      example: '0xA556'
+    - name: rc_code_2
+      type: uint16_t
+      default: 0
+      example: '0xA506'
+      desc: Secondary remote control code. Some code are sent in two parts
+
+pronto:
+  desc: Pronto raw code
+  type: IR
+  link:
+    - http://remotecentral.com/
+  args:
+    - name: data
+      type: string
+      desc: Raw code to send, specified as a string
+      example: '"0000 006D 0010 0000 0008 0020 0008 0046 000A 0020 0008 0020 0008 001E 000A 001E 000A 0046 000A 001E 0008 0020 0008 0020 0008 0046 000A 0046 000A 0046 000A 001E 000A 001E 0008 06C3"'
+      schema:
+        proto_pronto:
+
+raw:
+  desc: Raw remote code
+  type: IR/RF
+  args:
+    - name: code
+      type: int32_t[] # TODO alternative in time_period
+      desc: |
+        The raw code to send as a list of integers.
+        Positive numbers represent a digital high signal and
+        negative numbers a digital low signal.
+        The number itself encodes how long the signal should last (in microseconds).
+      example: |
+        [4088, -1542, 1019, -510, 513, -1019, 510, -509, 511, -510, 1020,
+        -1020, 1022, -1019, 510, -509, 511, -510, 511, -509, 511, -510,
+        1020, -1019, 510, -511, 1020, -510, 512, -508, 510, -1020, 1022,
+        -1021, 1019, -1019, 511, -510, 510, -510, 1022, -1020, 1019,
+        -1020, 511, -511, 1018, -1022, 1020, -1019, 1021, -1019, 1020,
+        -511, 510, -1019, 1023, -1019, 1019, -510, 512, -508, 510, -511,
+        512, -1019, 510, -509]
+      schema:
+        Length:
+          min: 1
+        alternating_signs:
+    - name: carrier_frequency
+      type: float #TODO allow Hz uint
+      default: 0
+      desc: Frequency to send the signal with (for infrared signals)
+
+rc5:
+  desc: RC5 IR code
+  type: IR
+  args:
+    - name: address
+      type: int
+      desc: Address to send
+      example: '0x1F'
+      schema:
+        Range:
+          min: 0
+          max: 0x1F
+    - name: command
+      type: int
+      desc: RC5 command to send
+      example: '0x3F'
+      schema:
+        Range:
+          min: 0
+          max: 0x7F
+
+rc_switch_raw_pst: # TODO handle nested arguments
+  desc: RC5 switch code with preset
+  type: IR/RF #TODO type??
+  args:
+    - name: code
+      type: string
+      desc: Raw code to send
+      example: '"001010011001111101011011"'
+      schema:
+        binary_string:
+    - name: protocol
+      type: int
+      desc: Number of the preset protocol definition
+      example: '1'
+
+samsung:
+  desc: Samsung IR code. It transmits codes up to 64 bits in length in a single packet
+  type: IR
+  args:
+    - name: data
+      desc: code to send
+      type: uint64_t
+      example: '0xB946F50A09F6'
+    - name: nbits
+      desc: Number of bits to send (32 to 64)
+      type: int
+      example: '48'
+      default: 32
+      schema:
+        Range:
+          min: 32
+          max: 64
+samsung36:
+  desc: Samsumg36 IR code.  It transmits the address and command in two packets separated by a “space”.
+  type: IR
+  args:
+    - name: address
+      desc: Address to send
+      type: uint16_t
+      example: '0x0400'
+    - name: command
+      desc: Samsung36 command to send
+      type: uint32_t
+      example: '0x000E00FF'
+
+sony:
+  desc: Sony IR code
+  type: IR
+  args:
+    - name: data
+      desc: Code to send
+      type: uint32_t
+      example: '0x123'
+    - name: nbits
+      desc: Number of bits to send (12, 15 or 20)
+      type: int
+      example: '12'
+      default: 12
+      schema:
+        Any: [12, 15, 20]
+
+toshiba_ac:
+  desc: Toshiba AC IR code
+  type: IR
+  args:
+    - name: rc_code_1
+      type: uint64_t
+      desc: Remote control code
+      example: '0xB24DBF4040BF'
+    - name: rc_code_2
+      type: uint64_t
+      default: 0
+      example: '0xD5660001003C'
+      desc: Secondary remote control code. Some code are sent in two parts

@@ -20,6 +20,7 @@ from aioesphomeapi import (
     FanInfo,
     LightInfo,
     NumberInfo,
+    RemoteInfo,
     SelectInfo,
     SensorInfo,
     SwitchInfo,
@@ -49,6 +50,7 @@ INFO_TYPE_TO_PLATFORM: dict[type[EntityInfo], str] = {
     SensorInfo: "sensor",
     SwitchInfo: "switch",
     TextSensorInfo: "sensor",
+    RemoteInfo: "remote",
 }
 
 
