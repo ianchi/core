@@ -48,15 +48,21 @@ class EsphomeRemote(EsphomeEntity[RemoteInfo, EntityState], RemoteEntity):
 
         for cmd_str in command:
 
-            cmd = REGISTRY.parse_command(cmd_str)
+            cmd = REGISTRY.convert(cmd_str, protocols=["duration"])
+
+            if not cmd:
+                raise ValueError("Command cannot be converted to 'duration' raw format")
+
+            repeat = kwargs["num_repeats"] if "num_repeats" in kwargs else 1
+            wait = int(kwargs["delay_secs"] * 1000) if "delay_secs" in kwargs else 0
 
             await self._client.remote_command(
                 self._static_info.key,
                 RemoteCommand.SEND,
-                cmd.name,
-                cmd.args,
-                1,
-                0,
+                cmd[0].protocol.name,
+                cmd[0].args,
+                repeat,
+                wait,
             )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
