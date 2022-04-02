@@ -2092,6 +2092,9 @@ raspyrfm-client==1.2.8
 # homeassistant.components.rainmachine
 regenmaschine==2022.01.0
 
+# homeassistant.components.remote
+remotecodes==0.0.1
+
 # homeassistant.components.esphome
 remoteprotocols==0.0.6
 

@@ -3,5 +3,6 @@
   "name": "Remote",
   "documentation": "https://www.home-assistant.io/integrations/remote",
   "codeowners": [],
+  "requirements": ["remotecodes==0.0.1"],
   "quality_scale": "internal"
 }
