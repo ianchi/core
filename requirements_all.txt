@@ -2093,7 +2093,7 @@ raspyrfm-client==1.2.8
 regenmaschine==2022.01.0
 
 # homeassistant.components.esphome
-remoteprotocols==0.0.4
+remoteprotocols==0.0.6
 
 # homeassistant.components.renault
 renault-api==0.1.8
